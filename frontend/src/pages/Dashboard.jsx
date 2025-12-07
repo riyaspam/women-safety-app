@@ -1,30 +1,45 @@
+import { useState } from "react";
+import { uploadAudio, saveLocation } from "../api";
+
 export default function Dashboard() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const [result, setResult] = useState("");
+
+  const sendAudio = async (e) => {
+    const file = e.target.files[0];
+    const res = await uploadAudio(file);
+    setResult(JSON.stringify(res));
+  };
+
+  const shareLocation = () => {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const payload = {
+        user_id: user.user_id,
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+      };
+      const res = await saveLocation(payload);
+      setResult(JSON.stringify(res));
+    });
+  };
+
   return (
     <div className="p-10">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+      <h2 className="text-3xl">Welcome, {user.name}</h2>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="p-6 border shadow rounded-xl bg-white">
-          <h3 className="font-bold mb-2">Audio Detection</h3>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded">
-            Start Listening
-          </button>
-        </div>
-
-        <div className="p-6 border shadow rounded-xl bg-white">
-          <h3 className="font-bold mb-2">GPS Tracking</h3>
-          <button className="bg-green-600 text-white px-4 py-2 rounded">
-            Share Location
-          </button>
-        </div>
-
-        <div className="p-6 border shadow rounded-xl bg-white">
-          <h3 className="font-bold mb-2">Video Monitoring</h3>
-          <button className="bg-red-600 text-white px-4 py-2 rounded">
-            Enable Camera
-          </button>
-        </div>
+      <div className="mt-6">
+        <h3 className="text-xl">Upload Audio</h3>
+        <input type="file" accept="audio/*" onChange={sendAudio} />
       </div>
+
+      <div className="mt-6">
+        <h3 className="text-xl">Share Location</h3>
+        <button onClick={shareLocation} className="bg-red-500 text-white px-4 py-2">
+          Send Location
+        </button>
+      </div>
+
+      <p className="mt-6 bg-gray-100 p-3 rounded">{result}</p>
     </div>
   );
 }
