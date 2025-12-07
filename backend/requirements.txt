@@ -1,0 +1,11 @@
+Flask
+flask-cors
+flask-sqlalchemy
+werkzeug
+joblib
+numpy
+librosa
+soundfile
+transformers
+torch
+scikit-learn
