@@ -1,4 +1,5 @@
 import os
+import tempfile
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,13 +7,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Location
 
 # ---------------------------------------
-# OPTIONAL: your ML model import (dummy)
+# Dummy ML function
 # ---------------------------------------
 def predict_from_file(path):
-    """
-    TODO: Replace with real ML model
-    Returns dummy prediction (label, score)
-    """
     return "scream", 0.82
 
 
@@ -23,7 +20,7 @@ def save_location(user_id, lat, lon):
 
 
 # ---------------------------------------
-# APP SETUP
+# Flask Setup
 # ---------------------------------------
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///shadow_guardian.db"
@@ -34,7 +31,7 @@ CORS(app)
 
 
 # ---------------------------------------
-# REGISTER API
+# REGISTER
 # ---------------------------------------
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -53,8 +50,8 @@ def register():
         return jsonify({'error': 'Email already registered'}), 400
 
     hashed_password = generate_password_hash(password)
-
     user = User(name=name, email=email, password=hashed_password)
+
     db.session.add(user)
     db.session.commit()
 
@@ -62,7 +59,7 @@ def register():
 
 
 # ---------------------------------------
-# LOGIN API
+# LOGIN
 # ---------------------------------------
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -92,8 +89,6 @@ def predict_audio():
         return jsonify({'error': 'No file uploaded'}), 400
 
     file = request.files['file']
-
-    import tempfile
     temp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
     file.save(temp.name)
 
@@ -110,7 +105,7 @@ def predict_audio():
 # LOCATION SAVE
 # ---------------------------------------
 @app.route('/api/update_location', methods=['POST'])
-def update_location_route():
+def update_location():
     data = request.json
 
     user_id = data.get('user_id')
@@ -138,6 +133,8 @@ def test():
 # ---------------------------------------
 if __name__ == '__main__':
     print("🚀 Shadow Guardian Backend starting...")
+
     with app.app_context():
-        db.create_all()   # Auto-create database tables
+        db.create_all()
+
     app.run(host='0.0.0.0', port=5000, debug=True)
